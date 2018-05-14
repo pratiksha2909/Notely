@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:paddingLeft="50dp"
+    android:paddingRight="50dp"
+    android:paddingTop="40dp"
+    android:paddingBottom="30dp"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:textAlignment="textStart"
+        android:gravity="start"
+        android:inputType="textMultiLine"
+        android:textSize="30dp"
+        android:editable="false"
+        android:layout_weight="1"
+        android:hint="Add title here!"
+        android:fontFamily="@font/abril_fatface"
+        />
+
+
+    <EditText
+        android:id="@+id/gist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="7"
+        android:paddingTop="15dp"
+        android:background="@null"
+        android:editable="false"
+        android:fontFamily="serif"
+        android:gravity="start"
+        android:hint="Add text here!"
+        android:inputType="textMultiLine"
+        android:textColor="@android:color/black"
+        android:textAlignment="textStart" />
+</LinearLayout>

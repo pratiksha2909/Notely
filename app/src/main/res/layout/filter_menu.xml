@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/black"
+    android:alpha="0.5"
+    android:padding="20dp"
+    android:paddingTop="?attr/actionBarSize">
+
+    <!-- #00FFCC - selected -->
+
+    <!-- filter menu -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="80dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="FILTER"
+            android:layout_weight="1"
+            android:padding="10dp"
+            android:layout_gravity="center_vertical"
+            android:textColor="@android:color/white"
+            />
+
+        <ImageView
+            android:id="@+id/filterDL"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_close"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="0"
+            />
+
+    </LinearLayout>
+
+
+    <!-- hearted menu -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/heartedTV"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="Hearted"
+            android:layout_weight="1"
+            android:padding="10dp"
+            android:layout_gravity="center_vertical"
+            android:textColor="@android:color/white"
+            />
+
+        <ImageView
+            android:id="@+id/heartedDL"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_tick"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="0"
+            />
+
+    </LinearLayout>
+
+
+    <!-- favourite menu -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/favouriteTV"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="Favourite"
+            android:layout_weight="1"
+            android:padding="10dp"
+            android:layout_gravity="center_vertical"
+            android:textColor="@android:color/white"
+            />
+
+        <ImageView
+            android:id="@+id/favouriteDL"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_tick"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="0"
+            />
+
+    </LinearLayout>
+
+</LinearLayout>

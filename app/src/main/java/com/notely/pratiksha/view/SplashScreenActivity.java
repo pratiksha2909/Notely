@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 
 import com.notely.pratiksha.R;
+import com.notely.pratiksha.Utils;
 import com.notely.pratiksha.model.DataManager;
 import com.notely.pratiksha.model.Notely;
 
@@ -33,15 +34,6 @@ public class SplashScreenActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        ActionBar actionBar=getSupportActionBar();
-        menu.clear();
-        if (actionBar != null) {
-            actionBar.hide();
-        }
-        return true;
-    }
 
     private void fetchLaunchData(){
 
@@ -56,6 +48,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                 } else{
                     new FetchLaunchDataTask(SplashScreenActivity.this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
+
             }
         }, SPLASH_TIME_OUT);
 

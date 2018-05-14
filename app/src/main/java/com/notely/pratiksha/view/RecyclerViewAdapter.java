@@ -1,6 +1,7 @@
 package com.notely.pratiksha.view;
 
 import android.app.Activity;
+import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -14,16 +15,20 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.Toast;
 
 
 import com.notely.pratiksha.R;
+import com.notely.pratiksha.Utils;
 import com.notely.pratiksha.model.DataManager;
 import com.notely.pratiksha.model.Notely;
 
 import java.lang.ref.WeakReference;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -31,15 +36,18 @@ import java.util.List;
  * Created by pratiksha on 4/12/18.
  */
 
-public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
+public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewHolder> implements Filterable {
 
     private LayoutInflater inflater = null;
     private Activity activity;
     private DataManager dataManager;
+    private List<Notely> filteredData =null;
+    private NoteFilter noteFilter = new NoteFilter();
 
     public RecyclerViewAdapter(Activity activity){
         this.activity = activity;
         dataManager = DataManager.getInstance(activity);
+        filteredData = new ArrayList<>(dataManager.getAllNotes());
     }
 
     @Override
@@ -56,7 +64,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewHolder
 
     @Override
     public void onBindViewHolder(final RecyclerViewHolder holder, int position) {
-        final Notely notely = dataManager.getAllNotes().get(position);
+        final Notely notely = filteredData.get(position);
         holder.mTitle.setText(notely.getTitle());
         holder.mGist.setText(notely.getGist());
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -67,7 +75,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewHolder
             e.printStackTrace();
         }
 
-        holder.mLastUpdated.setText("Last Updated " + getRelativeDateString(lastUpdatedDate));
+        holder.mLastUpdated.setText("Last Updated " + Utils.getRelativeDateString(lastUpdatedDate));
 
 
 
@@ -88,7 +96,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewHolder
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                launchFragment(holder, notely.getId());
+                launchNoteViewFragment(holder, notely.getId());
             }
         });
 
@@ -98,11 +106,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewHolder
             public void onClick(View view) {
                 if(notely.isStarred()){
                     holder.mStar.setImageResource(R.drawable.ic_star);
-
                 }
                 else {
                     holder.mStar.setImageResource(R.drawable.ic_star_selected);
-
                 }
 
                 Notely noteToSave = new Notely(notely.getTitle(), notely.getGist(), notely.isFavourite(), !notely.isStarred(), notely.getLastUpdated());
@@ -115,6 +121,12 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewHolder
                 } else{
                     new SaveNoteTask(activity, noteToSave).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
+
+                String filterString  = Utils.getFilterSting(NoteListFragment.isStarFilterOn, NoteListFragment.isFavFilterOn);
+                if(!NoteListFragment.isFavFilterOn && !NoteListFragment.isStarFilterOn) {
+                    filterString = "A";
+                }
+                getFilter().filter(filterString);
 
             }
         });
@@ -142,21 +154,31 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewHolder
                     new SaveNoteTask(activity, noteToSave).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
 
+                String filterString  = Utils.getFilterSting(NoteListFragment.isStarFilterOn, NoteListFragment.isFavFilterOn);
+                if(!NoteListFragment.isFavFilterOn && !NoteListFragment.isStarFilterOn) {
+                    filterString = "A";
+                }
+                getFilter().filter(filterString);
+
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        if(dataManager.getAllNotes() != null){
-            return dataManager.getAllNotes().size();
+
+        if(filteredData != null){
+            return filteredData.size();
         }
+
         return 0;
     }
 
 
-    private void launchFragment(RecyclerViewHolder holder, long noteId){
-        FragmentTransaction transaction = ((AppCompatActivity)activity).getSupportFragmentManager().beginTransaction();
+
+
+    private void launchNoteViewFragment(RecyclerViewHolder holder, long noteId){
+
         NoteViewFragment noteViewFragment = new NoteViewFragment();
         Bundle bundle = new Bundle();
         bundle.putLong("noteId", noteId);
@@ -164,46 +186,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewHolder
         bundle.putString("gist", holder.mGist.getText().toString());
         bundle.putString("lastUpdated", holder.mLastUpdated.getText().toString());
         noteViewFragment.setArguments(bundle);
-        transaction.replace(R.id.fragment_container, noteViewFragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
+        Utils.launchFragment(activity, noteViewFragment, "NoteListFragment");
     }
 
-    public  String getRelativeDateString( Date date ) {
-
-
-        Date now = new Date();
-        long hrs = (now.getTime() - date.getTime()) / (1000 * 60 * 60);//in milliSec
-        if (hrs <= 0) {
-            long mins = (now.getTime() - date.getTime()) / (1000 * 60 );
-            return pluralizeString("min", (int) mins) + " ago";
-        } else if (hrs <= 12) {
-            return pluralizeString("hour", (int) hrs) + " ago";
-        } else if (hrs <= 24) {
-            return "today "+ pluralizeString("hour", (int) hrs) + " ago";
-        } else if (hrs <= 24 * 30) {
-            return pluralizeString("day", (int) (hrs / (24))) + " ago";
-        } else if (hrs <= 24 * 30 * 12) {
-            return pluralizeString("month", (int) (hrs / (24 * 30))) + " ago";
-        } else {
-            return pluralizeString("year", (int) (hrs / (24 * 30 * 12))) + " ago";
-        }
+    @Override
+    public Filter getFilter() {
+        return noteFilter;
     }
 
-
-
-    public  String pluralizeString( String str, int count ) {
-
-        String s = "s";
-        if ( count <= 1 ) {
-            s = "";
-        }
-        // Default to 0.
-        if (count < 0) {
-            count = 0;
-        }
-        return Integer.toString( count ) + " " + str + s;
-    }
     private class SaveNoteTask extends AsyncTask<Void, Void, Void> {
 
         private WeakReference<Activity> weakReference;
@@ -237,4 +227,51 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewHolder
         }
     }
 
+    private class NoteFilter extends Filter{
+
+
+        //1st character set - starred note; 2nd character set - favourite note; 1st character value A - all notes
+        @Override
+        protected FilterResults performFiltering(CharSequence charSequence) {
+
+            FilterResults filterResults = new FilterResults();
+            List<Notely> notelyList = new ArrayList<>();
+
+            if(charSequence.charAt(0) == 'A'){
+                filterResults.values = dataManager.getAllNotes();
+                filterResults.count = dataManager.getAllNotes().size();
+                return filterResults;
+            }
+
+            for(int i = 0; i < dataManager.getAllNotes().size(); i++){
+                Notely notely = dataManager.getAllNotes().get(i);
+
+                boolean cond1 = charSequence.charAt(0) == '1';
+                boolean cond2 = charSequence.charAt(1) == '1';
+
+                if(cond1 && cond2){
+                     if(notely.isStarred() && notely.isFavourite())
+                        notelyList.add(notely);
+                }
+                else if(cond1 && notely.isStarred()){
+                    notelyList.add(notely);
+                }
+                else if(cond2 && notely.isFavourite()){
+                    notelyList.add(notely);
+                }
+
+            }
+
+            filterResults.values = notelyList;
+            filterResults.count = notelyList.size();
+
+            return filterResults;
+        }
+
+        @Override
+        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+            filteredData = (ArrayList<Notely>) filterResults.values;
+            notifyDataSetChanged();
+        }
+    }
 }

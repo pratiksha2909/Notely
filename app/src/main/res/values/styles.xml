@@ -1,0 +1,53 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="titleStyle">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/colorBlack</item>
+        <item name="android:textSize">@dimen/title_size</item>
+    </style>
+
+    <style name="gistStyle">
+        <item name="android:textColor">@color/colorGreyDark</item>
+        <item name="android:textSize">@dimen/gist_size</item>
+    </style>
+
+    <style name="lastUpdatedStyle">
+        <item name="android:textColor">@color/colorGreyDark</item>
+        <item name="android:textSize">@dimen/last_updated_size</item>
+    </style>
+
+    <style name="toolbarTitlestyle">
+        <item name="android:fontFamily">@font/abril_fatface</item>
+        <item name="android:textSize">@dimen/title_size</item>
+        <item name="android:textColor">@color/colorBlack</item>
+        <item name="android:state_multiline">true</item>
+    </style>
+
+    <style name="toolbarSubtitlestyle">
+        <item name="android:fontFamily">serif</item>
+        <item name="android:textSize">@dimen/subtitle_size</item>
+        <item name="android:textColor">@color/colorGreyLight</item>
+    </style>
+
+    <style name="toolbarStyle">
+        <item name="android:paddingTop">30dp</item>
+    </style>
+
+</resources>

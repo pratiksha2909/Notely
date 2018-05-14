@@ -33,7 +33,6 @@ public class RecyclerViewHolder extends RecyclerView.ViewHolder{
         mFav =  v.findViewById(R.id.heart);
         foregroundView = v.findViewById(R.id.foreground_view);
         backgroundView = v.findViewById(R.id.background_view);
-        //mStar.setColorFilter(Color.argb(255, 255, 255, 255));
     }
 
 }

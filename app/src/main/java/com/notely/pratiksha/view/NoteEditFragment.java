@@ -10,6 +10,10 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.Selection;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,10 +21,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.notely.pratiksha.R;
+import com.notely.pratiksha.Utils;
 import com.notely.pratiksha.model.DataManager;
 import com.notely.pratiksha.model.Notely;
 
@@ -40,14 +47,17 @@ public class NoteEditFragment extends Fragment {
     private String lastUpdated;
     private EditText titleET;
     private EditText gistET;
+    private boolean isUndoOn;
 
     private Activity activity;
+    private View rootView;
 
 
     public NoteEditFragment(){
         noteId = -1;
         title = "";
         gist = "";
+        isUndoOn = false;
     }
 
     @Override
@@ -67,7 +77,7 @@ public class NoteEditFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         activity = getActivity();
-        View rootView = inflater.inflate(R.layout.note_edit, container, false);
+        rootView = inflater.inflate(R.layout.note_edit, container, false);
         gistET = rootView.findViewById(R.id.gist);
         titleET = rootView.findViewById(R.id.title);
         titleET.setText(title);
@@ -78,19 +88,33 @@ public class NoteEditFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        addListeners();
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         menu.clear();
-        inflater.inflate(R.menu.menu_edit,menu);
+        activity.getMenuInflater().inflate(R.menu.menu_edit, menu);
     }
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        ActionBar actionBar= ((AppCompatActivity)activity).getSupportActionBar();
-        actionBar.setTitle("");
-        actionBar.setSubtitle("");
-        actionBar.show();
+        Toolbar toolbar = activity.findViewById(R.id.toolbar);
+        toolbar.setTitle("");
+        toolbar.setSubtitle("");
+        toolbar.setNavigationIcon(R.drawable.ic_back);
+        activity.findViewById(R.id.titleText).setVisibility(View.GONE);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                activity.onBackPressed();
+            }
+        });
     }
 
     @Override
@@ -98,8 +122,9 @@ public class NoteEditFragment extends Fragment {
         super.onOptionsItemSelected(item);
 
         switch(item.getItemId()){
-            /*case R.id.action_undo:
-                break;*/
+            case R.id.action_undo:
+                undoText();
+                break;
             case R.id.action_save:
                 saveNote();
                 break;
@@ -108,10 +133,76 @@ public class NoteEditFragment extends Fragment {
         return true;
     }
 
+    //remove listener and hide keypad when fragment goes in fragment
     @Override
     public void onPause() {
         super.onPause();
         hideKeyPad();
+        removeListeners();
+    }
+
+    //for smooth transitioning of fragments
+    @Override
+    public Animation onCreateAnimation(int transit, boolean enter, int nextAnim) {
+        if (nextAnim == 0) {
+            return super.onCreateAnimation(transit, enter, nextAnim);
+        }
+
+        Animation anim = android.view.animation.AnimationUtils.loadAnimation(getContext(), nextAnim);
+
+        //using hardware layer to make the animation stutter free
+        rootView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        anim.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+            @Override
+            public void onAnimationEnd(Animation animation) {
+
+                //setting the layer type back to none after animation
+                rootView.setLayerType(View.LAYER_TYPE_NONE, null);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+        });
+        return anim;
+    }
+
+    private void addListeners(){
+        titleET.addTextChangedListener(titleListener);
+        gistET.addTextChangedListener(gistListener);
+    }
+
+    private void removeListeners(){
+        titleET.removeTextChangedListener(titleListener);
+        gistET.removeTextChangedListener(gistListener);
+    }
+
+    private void undoText(){
+        Pair pair = UndoManager.getInstance().popFromStack();
+        if(pair == null) {
+            return;
+        }
+
+        isUndoOn = true;
+        if(pair.getTextId().equals("title")){
+            titleET.setText(pair.getText());
+
+            //setting the cursor position
+            int position = titleET.length();
+            Editable etext = titleET.getText();
+            Selection.setSelection(etext, position);
+        }
+
+        if(pair.getTextId().equals("gist")){
+            gistET.setText(pair.getText());
+
+            //setting the cursor position
+            int position = gistET.length();
+            Editable etext = gistET.getText();
+            Selection.setSelection(etext, position);
+        }
+
     }
 
     private void saveNote(){
@@ -119,7 +210,7 @@ public class NoteEditFragment extends Fragment {
         gist = gistET.getText().toString();
 
         if(title.isEmpty() || gist.isEmpty()){
-            //TODO: show error message AND RETURN
+            Toast.makeText(activity, "Can't save an empty note!", Toast.LENGTH_LONG);
             return;
         }
 
@@ -147,8 +238,8 @@ public class NoteEditFragment extends Fragment {
         return date;
     }
 
-    private void launchFragment(){
-        FragmentTransaction transaction = ((AppCompatActivity)activity).getSupportFragmentManager().beginTransaction();
+    private void launchNoteViewFragment(){
+
         NoteViewFragment noteViewFragment = new NoteViewFragment();
         Bundle bundle = new Bundle();
         bundle.putLong("noteId", noteId);
@@ -156,9 +247,7 @@ public class NoteEditFragment extends Fragment {
         bundle.putString("gist",gist);
         bundle.putString("lastUpdated", lastUpdated);
         noteViewFragment.setArguments(bundle);
-        transaction.replace(R.id.fragment_container, noteViewFragment);
-        //transaction.addToBackStack(null);
-        transaction.commit();
+        Utils.launchFragment(activity, noteViewFragment, "NoteEditFragment");
     }
 
 
@@ -203,7 +292,7 @@ public class NoteEditFragment extends Fragment {
             super.onPostExecute(null);
             dialog.dismiss();
 
-            launchFragment();
+            launchNoteViewFragment();
         }
     }
 
@@ -214,9 +303,51 @@ public class NoteEditFragment extends Fragment {
                 imm.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), 0);
             }
         }catch(Exception e) {
-
+            e.printStackTrace();
         }
     }
+
+
+    //listeners for keeping track of the last strings entered!
+    private TextWatcher titleListener = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int start, int count, int afterLength) {
+            if(!isUndoOn)
+                UndoManager.getInstance().pushToStack("title",charSequence.toString());
+            else
+                isUndoOn = false;
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+
+        }
+    };
+
+    private TextWatcher gistListener = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int start, int count, int afterLength) {
+            if(!isUndoOn)
+                UndoManager.getInstance().pushToStack("gist",charSequence.toString());
+            else
+                isUndoOn = false;
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+
+        }
+    };
 
 
 
