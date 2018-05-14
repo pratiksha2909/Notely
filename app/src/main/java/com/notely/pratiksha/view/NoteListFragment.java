@@ -59,11 +59,12 @@ public class NoteListFragment extends Fragment implements RecyclerItemTouchHelpe
 
     private List<Notely> notesToDelete = new ArrayList<>();
     private TextView emptyView;
+    private View rootView;
 
     @Override
     public View onCreateView(LayoutInflater inflater,  ViewGroup container,  Bundle savedInstanceState) {
 
-        View rootView = inflater.inflate(R.layout.note_list, container, false);
+        rootView = inflater.inflate(R.layout.note_list, container, false);
         activity = getActivity();
         drawerLayout = (DrawerLayout) activity.findViewById(R.id.drawer_layout);
         emptyView = (TextView) rootView.findViewById(R.id.emptyView);
@@ -323,7 +324,7 @@ public class NoteListFragment extends Fragment implements RecyclerItemTouchHelpe
         Animation anim = android.view.animation.AnimationUtils.loadAnimation(getContext(), nextAnim);
 
         //using hardware layer to make the animation stutter free
-        getView().setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        rootView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 
         anim.setAnimationListener(new Animation.AnimationListener() {
             @Override
@@ -332,7 +333,7 @@ public class NoteListFragment extends Fragment implements RecyclerItemTouchHelpe
             public void onAnimationEnd(Animation animation) {
 
                 //setting the layer type back to none after animation
-                //getView().setLayerType(View.LAYER_TYPE_NONE, null);       //TODO: CRASHING HERE!
+                rootView.setLayerType(View.LAYER_TYPE_NONE, null);
             }
 
             @Override
