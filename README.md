@@ -1,6 +1,10 @@
 # Notely
 
-
+This App helps users to 
+ - Create new notes.
+ - Mark them as favourite or star. 
+ - Filter user's favourite/starred notes.
+ 
 The following key points has been taken care of to improve the performance of the app as well as to reduce its size:
 
 - VectorDrawables has been used in place of raster images to make the images scalable and to reduce the overall size of the app. 
