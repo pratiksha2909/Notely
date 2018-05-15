@@ -1,9 +1,7 @@
 # Notely
 
-This App helps users to 
- - Create new notes.
- - Mark them as favourite or star. 
- - Filter user's favourite/starred notes.
+Notely is a user friendly Android application. It allows the user to create new notes, edit them, and delete them. Apart from these operations, a user can also tag their notes as Favorites, and further filter notes depending on the tag. 
+A user can also easily undo any accidental modifications done to the note, by pressing the UNDO button. Accidental deletion can also be undone by a simple click.
  
 The following key points has been taken care of to improve the performance of the app as well as to reduce its size:
 
